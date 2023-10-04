@@ -1,4 +1,6 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Error};
+use std::env;
+
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder, Error};
 use r2d2_sqlite::{self, SqliteConnectionManager};
 use actix_cors::Cors;
 use futures::{future::ok, stream::once};
@@ -8,17 +10,13 @@ use db::{Pool, Queries};
 
 #[get("/")]
 async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
+    HttpResponse::Ok().body("Tileblaster: simplest for serving MBtiles")
 }
 
 
 
 #[get("/{zoom}/{x}/{y}.png")]
 async fn zoomtile(path_address: web::Path<db::TileAddress>, db: web::Data<Pool>) -> impl Responder {
-    // let fut_result = vec![
-    //     db::execute(&db, Queries::GetTile)
-    // ];
-    // let result: Result<Vec<_>, _> = futures::future::join_all(fut_result).await.into_iter().collect();
     let address = path_address.into_inner();
     let t = db::execute(&db, Queries::GetTile { address }).await;
     if let Ok(tile) = t {
@@ -30,15 +28,17 @@ async fn zoomtile(path_address: web::Path<db::TileAddress>, db: web::Data<Pool>)
     }
 }
 
-#[post("/echo")]
-async fn echo(req_body: String) -> impl Responder {
-    HttpResponse::Ok().body(req_body)
-}
-
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let manager = SqliteConnectionManager::file("/Users/theikkila/code/github/mbutil/tilesets/loisto.mbtiles");
+    let args: Vec<String> = env::args().collect();
+
+    let map_file = args.get(1).expect("");
+    let port = args.get(2).and_then(|p| {
+        p.parse::<u16>().ok()
+    }).unwrap_or(8080);
+
+    let manager = SqliteConnectionManager::file(map_file);
     let pool = Pool::new(manager).unwrap();
 
     HttpServer::new(move || {
@@ -49,9 +49,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(pool.clone()))
             .service(hello)
             .service(zoomtile)
-            .service(echo)
     })
-    .bind(("0.0.0.0", 8080))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }

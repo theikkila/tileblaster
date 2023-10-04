@@ -1,14 +1,14 @@
 use std::io::Cursor;
-use std::{thread::sleep, time::Duration};
+
 
 use actix_web::{error, web, Error};
 use image::{ImageBuffer, RgbaImage, Rgba};
-use image::Rgb;
-use image::RgbImage;
+
+
 use imageproc::drawing::{draw_text_mut, draw_line_segment_mut};
 use once_cell::sync::Lazy;
 use rusqlite::OptionalExtension;
-use rusqlite::Statement;
+
 use rusttype::{Font, Scale};
 use serde::Deserialize;
 use serde::Serialize;
