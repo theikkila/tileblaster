@@ -1,0 +1,20 @@
+[package]
+name = "tileblaster"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4"
+r2d2 = "0.8"
+r2d2_sqlite = "0.22"
+rusqlite = "0.29"
+serde = { version = "1.0", features = ["derive"] }
+# use of undeclared crate or module `futures`
+futures = { version = "0.3", features = ["async-await", "compat"] }
+actix-cors = "0.6.4"
+image = {version = "0.24.7", features = ["png"]}
+imageproc = "0.23.0"
+rusttype = "0.9.3"
+once_cell = "1.18.0"
